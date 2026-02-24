@@ -18,7 +18,7 @@ const authenticate = async (req, res, next) => {
       return res.status(401).send({ message: "Invalid Token Structure" });
     }
 
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded.userId).populate("roleId", "roleName");
     const UserAccess = await FindAllAccess({ roleID: user.roleId });
     if (!user) {
       return res.status(401).send({ message: "User not found" });

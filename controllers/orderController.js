@@ -78,8 +78,9 @@ const getMyOrders = async (req, res) => {
 
 // 3. GET /api/orders — super_admin gets all orders
 const getAllOrders = async (req, res) => {
+    console.log(req.user , "AAAAAAAAAAAAAAAAAAAAA");
     try {
-        if (req.user.role !== "super_admin") {
+        if (req.user.roleId.roleName !== "super_admin") {
             return res.status(403).json({ message: "Only super_admin can access all orders" });
         }
 
@@ -107,7 +108,10 @@ const getOrderById = async (req, res) => {
             return res.status(404).json({ message: "Order not found" });
         }
 
-        if (req.user.role !== "super_admin" && !order.userId.equals(req.user._id)) {
+        const isAdmin = req.user.roleId?.roleName === "super_admin";
+        const isOwner = order.userId?._id?.toString() === req.user._id.toString();
+
+        if (!isAdmin && !isOwner) {
             return res.status(403).json({ message: "Not authorized to view this order" });
         }
 
