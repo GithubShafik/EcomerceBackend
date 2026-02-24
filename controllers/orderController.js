@@ -122,7 +122,7 @@ const updateOrderStatus = async (req, res) => {
     try {
         const { statusId } = req.body;
 
-        if (req.user.role !== "super_admin") {
+        if (req.user.roleId.roleName !== "super_admin") {
             return res.status(403).json({ message: "Only super_admin can update status" });
         }
 
@@ -147,10 +147,66 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
+// 6. GET /api/orders/statuses — get all order statuses
+const getOrderStatuses = async (req, res) => {
+    try {
+        const statuses = await OrderStatus.find();
+        res.json(statuses);
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch order statuses", error: err.message });
+    }
+};
+
+// 7. POST /api/orders/statuses — create a new order status (super_admin)
+const createOrderStatus = async (req, res) => {
+    try {
+        if (req.user.roleId.roleName !== "super_admin") {
+            return res.status(403).json({ message: "Only super_admin can create statuses" });
+        }
+
+        const { name } = req.body;
+        if (!name) {
+            return res.status(400).json({ message: "Status name is required" });
+        }
+
+        const existing = await OrderStatus.findOne({ name });
+        if (existing) {
+            return res.status(400).json({ message: "Status already exists" });
+        }
+
+        const newStatus = new OrderStatus({ name });
+        const saved = await newStatus.save();
+        res.status(201).json({ message: "Order status created", status: saved });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to create order status", error: err.message });
+    }
+};
+
+// 8. DELETE /api/orders/statuses/:id — delete an order status (super_admin)
+const deleteOrderStatus = async (req, res) => {
+    try {
+        if (req.user.roleId.roleName !== "super_admin") {
+            return res.status(403).json({ message: "Only super_admin can delete statuses" });
+        }
+
+        const status = await OrderStatus.findByIdAndDelete(req.params.id);
+        if (!status) {
+            return res.status(404).json({ message: "Order status not found" });
+        }
+
+        res.json({ message: "Order status deleted" });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to delete order status", error: err.message });
+    }
+};
+
 module.exports = {
     placeOrder,
     getMyOrders,
     getAllOrders,
     getOrderById,
     updateOrderStatus,
+    getOrderStatuses,
+    createOrderStatus,
+    deleteOrderStatus,
 };

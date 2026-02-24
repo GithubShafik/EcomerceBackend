@@ -8,7 +8,19 @@ const {
   getAllOrders,
   getOrderById,
   updateOrderStatus,
+  getOrderStatuses,
+  createOrderStatus,
+  deleteOrderStatus,
 } = require("../controllers/orderController");
+
+// 📊 Get all order statuses
+router.get("/statuses", authenticate, getOrderStatuses);
+
+// ➕ Create a new order status (super_admin)
+router.post("/statuses", authenticate, createOrderStatus);
+
+// ❌ Delete an order status (super_admin)
+router.delete("/statuses/:id", authenticate, deleteOrderStatus);
 
 // 🛒 Place an order (user)
 router.post("/", authenticate, placeOrder);
