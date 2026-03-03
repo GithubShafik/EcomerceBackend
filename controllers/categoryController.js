@@ -10,26 +10,23 @@ const addCategory = async (req, res) => {
         if (!name) {
             return res
                 .status(400)
-                .send({ code: "failed", message: "Role Name is required" });
+                .send({ code: "failed", message: "Category name is required" });
         }
 
-        // Check if the role already exists
-        const role = await roleModel.findOne({ name });
-        if (role) {
+        const existing = await Category.findOne({ name });
+        if (existing) {
             return res
                 .status(409)
-                .send({ code: "failed", message: "Role already exists" });
+                .send({ code: "failed", message: "Category already exists" });
         }
 
-        // Create and save the new role
-        const newRole = new roleModel({ name });
-        await newRole.save();
+        const newCategory = new Category({ name });
+        await newCategory.save();
 
-        // Send a success response
         res.status(201).send({
             code: "success",
-            message: "Role created successfully",
-            data: newRole,
+            message: "Category created successfully",
+            data: newCategory,
         });
     } catch (error) {
         console.error(error);

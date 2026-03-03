@@ -10,10 +10,12 @@ const {
   deleteProduct,
 } = require("../controllers/productController");
 
-// Protected: All routes require auth
+// Public: browsing products
+router.get("/", getAllProducts);
+router.get("/:id", getProductById);
+
+// Protected: modifying products requires auth
 router.post("/", authenticate, upload.single("image"), createProduct);
-router.get("/", authenticate, getAllProducts);
-router.get("/:id", authenticate, getProductById);
 router.put("/:id", authenticate, upload.single("image"), updateProduct);
 router.delete("/:id", authenticate, deleteProduct);
 
