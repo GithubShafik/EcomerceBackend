@@ -14,6 +14,8 @@ const productSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User", // Optional: track which user added
   },
+  isDeleted: { type: Boolean, default: false },
+  deletedAt: { type: Date, default: null },
 });
 
 module.exports = mongoose.model("Product", productSchema);
