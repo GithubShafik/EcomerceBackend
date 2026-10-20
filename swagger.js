@@ -26,7 +26,7 @@ const swaggerDocument = {
     { name: "Cart", description: "Shopping cart operations" },
     { name: "Orders", description: "Order placement and order lifecycle management" },
     { name: "System", description: "System initialization and seed data" },
-  ],
+  ], 
   components: {
     securitySchemes: {
       bearerAuth: {
