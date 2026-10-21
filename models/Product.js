@@ -16,6 +16,8 @@ const productSchema = new mongoose.Schema({
   },
   isDeleted: { type: Boolean, default: false },
   deletedAt: { type: Date, default: null },
+  isSold: { type: Boolean, default: false },
+  condition: { type: String, default: "Gently Used" },
 });
 
 module.exports = mongoose.model("Product", productSchema);

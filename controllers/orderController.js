@@ -32,6 +32,9 @@ const placeOrder = async (req, res) => {
             if (!product) {
                 return res.status(404).json({ message: `Product not found: ${item.product}` });
             }
+            if (product.isSold) {
+                return res.status(400).json({ message: `"${product.name}" has already been sold!` });
+            }
 
             totalAmount += product.price * item.quantity;
 
@@ -39,6 +42,10 @@ const placeOrder = async (req, res) => {
                 product: product._id,
                 quantity: item.quantity,
             });
+
+            // Mark second-hand product as sold
+            product.isSold = true;
+            await product.save();
         }
 
         const newOrder = new Order({
@@ -54,7 +61,7 @@ const placeOrder = async (req, res) => {
         await savedOrder.populate("orderStatus", "name");
         await savedOrder.populate("products.product", "name price image");
 
-        res.status(201).json({ message: "Order placed successfully", order: savedOrder });
+        res.status(201).json({ success: true, message: "Order placed successfully", order: savedOrder });
 
     } catch (error) {
         console.error("Order placement error:", error);

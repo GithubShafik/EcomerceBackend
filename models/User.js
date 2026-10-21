@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
     ref: "Role",
     required: true,
   },
+  phone: { type: String, default: "" },
   turf: { type: mongoose.Schema.Types.ObjectId, ref: "Turf", required: false }, // Turf reference for Turf Admin
 });
 

@@ -10,6 +10,7 @@ const {
   updateProduct,
   deleteProduct,
   restoreProduct,
+  toggleProductSoldStatus,
 } = require("../controllers/productController");
 
 // Public: browsing products (only active)
@@ -24,6 +25,7 @@ router.get("/:id", getProductById);
 // Protected: modifying products requires auth
 router.post("/", authenticate, upload.single("image"), createProduct);
 router.put("/:id", authenticate, upload.single("image"), updateProduct);
+router.put("/:id/toggle-sold", authenticate, toggleProductSoldStatus);
 router.put("/:id/restore", authenticate, restoreProduct);
 router.delete("/:id", authenticate, deleteProduct);
 

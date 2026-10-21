@@ -2,13 +2,20 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const Role = require("../models/Role");
 
+const isSuperAdmin = async (user) => {
+  if (user?.roleId?.roleName) return user.roleId.roleName === "super_admin";
+  if (!user?.roleId) return false;
+  const role = await Role.findById(user.roleId);
+  return role?.roleName === "super_admin";
+};
+
 // Create Product
 const createProduct = async (req, res) => {
   try {
-    const { name, description, price, categoryId } = req.body;
+    const { name, description, price, categoryId, condition } = req.body;
 
-    const role = await Role.findById(req.user.roleId);
-    if (!role || role.roleName !== "super_admin") {
+    const isAdmin = await isSuperAdmin(req.user);
+    if (!isAdmin) {
       return res.status(403).json({ message: "Only super_admin can add products" });
     }
 
@@ -25,6 +32,8 @@ const createProduct = async (req, res) => {
       name,
       description,
       price,
+      condition: condition || "Gently Used",
+      isSold: false,
       category: category._id,
       image: req.file.path,
       createdBy: req.user._id,
@@ -51,8 +60,8 @@ const getAllProducts = async (req, res) => {
 // Get All Products (admin — includes soft-deleted)
 const getAllProductsAdmin = async (req, res) => {
   try {
-    const role = await Role.findById(req.user.roleId);
-    if (!role || role.roleName !== "super_admin") {
+    const isAdmin = await isSuperAdmin(req.user);
+    if (!isAdmin) {
       return res.status(403).json({ message: "Only super_admin can access this" });
     }
 
@@ -79,12 +88,12 @@ const getProductById = async (req, res) => {
 // Update Product
 const updateProduct = async (req, res) => {
   try {
-    const role = await Role.findById(req.user.roleId);
-    if (!role || role.roleName !== "super_admin") {
+    const isAdmin = await isSuperAdmin(req.user);
+    if (!isAdmin) {
       return res.status(403).json({ message: "Only super_admin can update products" });
     }
 
-    const { name, description, price, categoryId } = req.body;
+    const { name, description, price, categoryId, isSold, condition } = req.body;
 
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: "Product not found" });
@@ -99,9 +108,11 @@ const updateProduct = async (req, res) => {
       product.image = req.file.path;
     }
 
-    product.name = name || product.name;
-    product.description = description || product.description;
-    product.price = price || product.price;
+    if (name !== undefined) product.name = name;
+    if (description !== undefined) product.description = description;
+    if (price !== undefined) product.price = price;
+    if (condition !== undefined) product.condition = condition;
+    if (isSold !== undefined) product.isSold = isSold === true || isSold === "true";
 
     const updated = await product.save();
     res.json(updated);
@@ -113,8 +124,8 @@ const updateProduct = async (req, res) => {
 // Soft Delete Product
 const deleteProduct = async (req, res) => {
   try {
-    const role = await Role.findById(req.user.roleId);
-    if (!role || role.roleName !== "super_admin") {
+    const isAdmin = await isSuperAdmin(req.user);
+    if (!isAdmin) {
       return res.status(403).json({ message: "Only super_admin can delete products" });
     }
 
@@ -134,8 +145,8 @@ const deleteProduct = async (req, res) => {
 // Restore a soft-deleted Product
 const restoreProduct = async (req, res) => {
   try {
-    const role = await Role.findById(req.user.roleId);
-    if (!role || role.roleName !== "super_admin") {
+    const isAdmin = await isSuperAdmin(req.user);
+    if (!isAdmin) {
       return res.status(403).json({ message: "Only super_admin can restore products" });
     }
 
@@ -152,6 +163,29 @@ const restoreProduct = async (req, res) => {
   }
 };
 
+// Toggle Sold / Not Sold Status
+const toggleProductSoldStatus = async (req, res) => {
+  try {
+    const isAdmin = await isSuperAdmin(req.user);
+    if (!isAdmin) {
+      return res.status(403).json({ message: "Only super_admin can change product status" });
+    }
+
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    product.isSold = !product.isSold;
+    const updated = await product.save();
+
+    res.json({
+      message: `Product marked as ${product.isSold ? "Sold" : "Available"}`,
+      product: updated,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 module.exports = {
   createProduct,
   getAllProducts,
@@ -160,4 +194,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   restoreProduct,
+  toggleProductSoldStatus,
 };
