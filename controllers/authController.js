@@ -7,42 +7,46 @@ const JWT_SECRET = "hello_Boyyy";
 // Register a new user
 class authController {
   static register = async (req, res) => {
-    const { name, email, password, roleID } = req.body;
+    const { name, email, password, dob, mobile } = req.body;
 
     try {
-      // Check if user already exists
-      console.log(req.body,"req")
       const userExists = await User.findOne({ email });
       if (userExists) {
         return res.status(400).json({ message: "User already exists" });
       }
 
-            console.log(userExists,"userExists")
+      const role = await roleModel.findOne({ roleName: "user" });
+      if (!role) {
+        return res.status(500).json({ message: "Default user role is not configured" });
+      }
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = new User({
-        name ,
+        name,
         email,
         password: hashedPassword,
-        roleId: roleID,
+        dob,
+        mobile,
+        roleId: role._id,
       });
 
       await newUser.save();
 
-      const role = await roleModel.findOne({ _id: roleID });
-
       const userResponse = {
-        username: newUser.name,
+        name: newUser.name,
         email: newUser.email,
-        role: role.roleName,
+        dob: newUser.dob,
+        mobile: newUser.mobile,
         message: "User created successfully",
       };
       res.status(201).json(userResponse);
     } catch (error) {
-      res.status(500).json({ message: "Error creating user", error });
+      if (error.name === "ValidationError") {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Error creating user", error: error.message });
     }
   };
-
   static login = async (req, res) => {
     const { email, password } = req.body;
     try {

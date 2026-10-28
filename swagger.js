@@ -45,26 +45,28 @@ const swaggerDocument = {
           error: { type: "object" },
         },
       },
-      RegisterRequest: {
+          RegisterRequest: {
+  type: "object",
+  required: ["name", "email", "password"],
+  properties: {
+    name: { type: "string", example: "John Doe" },
+    email: { type: "string", format: "email", example: "john@example.com" },
+    password: { type: "string", format: "password", example: "Secret123" },
+    dob: { type: "string", format: "date", example: "1998-05-21" },
+    mobile: {
+      type: "string",
+      example: "9876543210",
+      description: "10-digit mobile number (starts with 6-9)",
+    },
+  },
+},
+           RegisterResponse: {
         type: "object",
-        required: ["email", "password", "roleID"],
         properties: {
           name: { type: "string", example: "John Doe" },
-          email: { type: "string", format: "email", example: "john@example.com" },
-          password: { type: "string", format: "password", example: "Secret123" },
-          roleID: {
-            type: "string",
-            example: "650c1f1e9b1d8b2bad123456",
-            description: "MongoDB ObjectId of the Role",
-          },
-        },
-      },
-      RegisterResponse: {
-        type: "object",
-        properties: {
-          username: { type: "string", example: "John Doe" },
           email: { type: "string", example: "john@example.com" },
-          role: { type: "string", example: "user" },
+          dob: { type: "string", format: "date-time", example: "1998-05-21T00:00:00.000Z" },
+          mobile: { type: "string", example: "9876543210" },
           message: { type: "string", example: "User created successfully" },
         },
       },
@@ -145,16 +147,19 @@ const swaggerDocument = {
           },
         },
       },
-      CreateUserAdminRequest: {
-        type: "object",
-        required: ["email", "password", "roleID"],
-        properties: {
-          username: { type: "string", example: "Jane Doe" },
-          email: { type: "string", format: "email", example: "jane@example.com" },
-          password: { type: "string", format: "password", example: "Password123" },
-          roleID: { type: "string", example: "650c1f1e9b1d8b2bad123456" },
-        },
-      },
+    CreateUserAdminRequest: {
+  type: "object",
+  required: ["name", "email", "password",  "roleID"],
+  properties: {
+    name: { type: "string", example: "Jane Doe" },
+    email: { type: "string", format: "email", example: "jane@example.com" },
+    password: { type: "string", format: "password", example: "Password123" },
+    dob: { type: "string", format: "date", example: "1998-05-21" },
+    mobile: { type: "string", example: "9876543210" },
+    roleID: { type: "string", example: "650c1f1e9b1d8b2bad123456" },
+    turf: { type: "string", description: "Optional, only for Turf Admin" },
+  },
+},
       Category: {
         type: "object",
         properties: {
@@ -347,7 +352,7 @@ const swaggerDocument = {
       post: {
         tags: ["Auth"],
         summary: "Register a new user",
-        description: "Creates a new user account with hashed password and associated role.",
+        description: "Creates a new user account with a hashed password and assigns the default user role.",
         requestBody: {
           required: true,
           content: {

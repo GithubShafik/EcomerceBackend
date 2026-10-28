@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 
 class userController {
   static createUser = async (req, res) => {
-    const { username, email, password, roleID } = req.body;
+    const { name, email, password, roleID } = req.body;
 
     try {
       // Check if user already exists
@@ -17,7 +17,7 @@ class userController {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const newUser = new User({
-        username,
+        name,
         email,
         password: hashedPassword,
         roleId: roleID,
