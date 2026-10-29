@@ -24,6 +24,7 @@ const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const attributeRoutes = require("./routes/attributeRoutes");
 const { setupSwagger } = require("./swagger");
 
 const InitialSetupWizard = require("./models/setupWizard");
@@ -45,6 +46,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api", cartRoutes);
 app.use("/api/category", categoryRoutes);
+app.use("/api/attribute", attributeRoutes);
 
 app.use("/init", (req, res) => {
   InitialSetupWizard()

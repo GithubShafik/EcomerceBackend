@@ -22,6 +22,7 @@ const swaggerDocument = {
     { name: "Roles", description: "Role management" },
     { name: "Users", description: "User account management" },
     { name: "Categories", description: "Product category management" },
+    { name: "Attributes", description: "Product attribute management" },
     { name: "Products", description: "Product catalog and inventory management" },
     { name: "Cart", description: "Shopping cart operations" },
     { name: "Orders", description: "Order placement and order lifecycle management" },
@@ -225,6 +226,64 @@ const swaggerDocument = {
             description: "Update only: set to `true` to remove the existing image.",
           },
         },
+      },
+      Attribute: {
+        type: "object",
+        properties: {
+          _id: { type: "string", example: "650c1f1e9b1d8b2bad333333" },
+          name: { type: "string", example: "Size" },
+          inputType: { type: "string", enum: ["text", "dropdown", "multi-select"] },
+          values: { type: "array", items: { type: "string" }, example: ["Small", "Large"] },
+          categories: {
+            type: "array",
+            items: {
+              oneOf: [
+                { type: "string" },
+                {
+                  type: "object",
+                  properties: {
+                    _id: { type: "string" },
+                    name: { type: "string" },
+                    slug: { type: "string" },
+                  },
+                },
+              ],
+            },
+          },
+          status: { type: "boolean", example: true },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        },
+      },
+      AttributeRequest: {
+        type: "object",
+        required: ["name", "inputType"],
+        properties: {
+          name: { type: "string", example: "Size" },
+          inputType: { type: "string", enum: ["text", "dropdown", "multi-select"] },
+          values: {
+            type: "array",
+            items: { type: "string" },
+            description: "Required for dropdown and multi-select attributes; leave empty for text.",
+          },
+          categories: {
+            type: "array",
+            items: { type: "string" },
+            description: "Category ObjectIds to associate with this attribute.",
+          },
+          status: { type: "boolean", default: true },
+        },
+      },
+      AttributeUpdateRequest: {
+        type: "object",
+        properties: {
+          name: { type: "string", example: "Size" },
+          inputType: { type: "string", enum: ["text", "dropdown", "multi-select"] },
+          values: { type: "array", items: { type: "string" } },
+          categories: { type: "array", items: { type: "string" } },
+          status: { type: "boolean" },
+        },
+        minProperties: 1,
       },
       Product: {
         type: "object",
@@ -1053,6 +1112,130 @@ const swaggerDocument = {
           },
           404: { description: "Category not found" },
           500: { description: "Server error" },
+        },
+      },
+    },
+    "/api/attribute": {
+      get: {
+        tags: ["Attributes"],
+        summary: "List attributes (Super Admin only)",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: "Attributes fetched successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    data: {
+                      type: "array",
+                      items: { $ref: "#/components/schemas/Attribute" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: "Authentication required" },
+          403: { description: "Super Admin access required" },
+        },
+      },
+      post: {
+        tags: ["Attributes"],
+        summary: "Create an attribute (Super Admin only)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/AttributeRequest" },
+            },
+          },
+        },
+        responses: {
+          201: { description: "Attribute created successfully" },
+          400: { description: "Invalid attribute data" },
+          401: { description: "Authentication required" },
+          403: { description: "Super Admin access required" },
+          409: { description: "An attribute with this name already exists" },
+        },
+      },
+    },
+    "/api/attribute/{id}": {
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          description: "MongoDB ObjectId of the attribute",
+          schema: { type: "string", example: "650c1f1e9b1d8b2bad333333" },
+        },
+      ],
+      get: {
+        tags: ["Attributes"],
+        summary: "Get an attribute (Super Admin only)",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: "Attribute fetched successfully" },
+          400: { description: "Invalid attribute ID" },
+          401: { description: "Authentication required" },
+          403: { description: "Super Admin access required" },
+          404: { description: "Attribute not found" },
+        },
+      },
+      put: {
+        tags: ["Attributes"],
+        summary: "Update an attribute (Super Admin only)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/AttributeUpdateRequest" },
+            },
+          },
+        },
+        responses: {
+          200: { description: "Attribute updated successfully" },
+          400: { description: "Invalid attribute data or ID" },
+          401: { description: "Authentication required" },
+          403: { description: "Super Admin access required" },
+          404: { description: "Attribute not found" },
+          409: { description: "An attribute with this name already exists" },
+        },
+      },
+      patch: {
+        tags: ["Attributes"],
+        summary: "Partially update an attribute (Super Admin only)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/AttributeUpdateRequest" },
+            },
+          },
+        },
+        responses: {
+          200: { description: "Attribute updated successfully" },
+          400: { description: "Invalid attribute data or ID" },
+          401: { description: "Authentication required" },
+          403: { description: "Super Admin access required" },
+          404: { description: "Attribute not found" },
+          409: { description: "An attribute with this name already exists" },
+        },
+      },
+      delete: {
+        tags: ["Attributes"],
+        summary: "Delete an attribute (Super Admin only)",
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: "Attribute deleted successfully" },
+          400: { description: "Invalid attribute ID" },
+          401: { description: "Authentication required" },
+          403: { description: "Super Admin access required" },
+          404: { description: "Attribute not found" },
         },
       },
     },
