@@ -9,7 +9,7 @@ dotenv.config();
 // const connectionUrl = "mongodb+srv://shaikhshafique966566:Pass123@cluster0.akczpya.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" || "mongodb://localhost:27017/Turfmanagement";
 
 
-const connectionUrl = process.env.MONGO_URI || "mongodb://localhost:27017";
+const connectionUrl =  "mongodb://localhost:27017";
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, "uploads");
